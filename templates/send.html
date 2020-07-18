@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>{{ title }}</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css"
+		integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+	<link href="https://fonts.googleapis.com/css?family=Roboto:300,400" rel="stylesheet">
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+	<div id="form_wrapper">
+		<div id="form_left">
+			<img src="/static/img/icon.png" alt="computer icon">
+			<p>tx_hash:</p>
+			<h3> {{ tx_hash }}</h3>
+		</div>
+		<div id="form_right">
+			<h1> Page Send</h1>
+			<div class="input_container">
+				<p>{{address_des}}</p>
+			</div>
+			<div class="input_container">
+				<p>Value: {{value}} ETH</p>
+			</div>
+			<a id='input_submit' class='input_field' href="/">Back Home</a>
+		</div>
+	</div>
+</body>
+
+</html>

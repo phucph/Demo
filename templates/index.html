@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{{ title }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
+    <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+    <script type="text/javascript" src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css"
+          href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.css">
+    <script type='text/javascript'
+            src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.js"></script>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css"
+          integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+<div class="container">
+    <!-- Phần nội dung chính -->
+    <div class="row">
+        <!-- Cột trái -->
+        <div class="col-sm-6">
+            <h2>Chức năng</h2>
+            <br>
+            <form class="form-inline" action="/forescast" method="POST">
+                <label>Vui lòng nhập dòng chảy tại đây</label>
+                <br>
+                <div class="form-group mx-sm-3 mb-2">
+                    <input placeholder="Flow Today" type="number" step="0.0001" name="flow" id="flow"
+                           class='form-control center input_field'>
+                </div>
+                <button type="submit" class="btn btn-primary mb-2">Dự đoán</button>
+            </form>
+            <br>
+            <p>Demo dự bá nhập vào ngày 30 tháng 10 dụ báo 3 ngày đầu tháng 11 </p>
+            <h3>Kết quả</h3>
+            <img src="/static/img/icon.png" alt="computer icon" width="100" height="100">
+            <label class="text-uppercase text-center"><p>Nội dung mục kết quả</p></label>
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">Dự báo trước</th>
+                    <th scope="col">Giá trị dự đoán</th>
+                    <th scope="col">Thực tế</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for i,j,k in chart %}
+                        <tr>
+                            <th scope="row"> {{ i }}</th>
+                            <td>{{ k }}</td>
+                            <td>{{ j }}</td>
+                        </tr>
+
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <!-- Kết thúc cột trái -->
+
+        <!-- Cột phải -->
+        <div class="col-sm-6">
+            <h2>Đồ thị</h2>
+            <div class="" id="chartContainer" style="height: 300px; width: 100%;"></div>
+            <p></p>
+            <br>
+            <h2>Biểu Đồ</h2>
+            <div class="" id="areaContainer" style="height: 300px; width: 100%;"></div>
+            <p>Một số văn bản...</p>
+            <p></p>
+        </div>
+        <!-- Kết thúc cột phải -->
+    </div>
+</div>
+<!-- Kết thúc phần nội dung chính -->
+
+<!-- Phần Footer -->
+<script>
+    window.onload = function () {
+
+        var chart = new CanvasJS.Chart("chartContainer", {
+            title: {
+                text: "Dòng chảy sông Vàm Cỏ Đông"
+            },
+            axisX: {
+                valueFormatString: "MMM YYYY",
+                title: "Thời gian"
+            },
+            axisY2: {
+                title: "Giá trị dòng chảy (m3/2)",
+                prefix: "",
+                suffix: "m3/s"
+            },
+            toolTip: {
+                shared: true
+            },
+            legend: {
+                cursor: "pointer",
+                verticalAlign: "top",
+                horizontalAlign: "left",
+                dockInsidePlotArea: true,
+                itemclick: toogleDataSeries
+            },
+            data: [{
+                type: "line",
+                axisYType: "secondary",
+                name: "Thực tế",
+                showInLegend: true,
+                markerSize: 0,
+                yValueFormatString: "#,###m3/s",
+                dataPoints: [
+                    {% for item, label in values %}
+                        {
+                            x: new Date{{item}},
+                            y: {{label}}
+                        },
+                    {% endfor %}
+                ]
+            },
+                {
+                    type: "line",
+                    axisYType: "secondary",
+                    name: "Dự báo",
+                    showInLegend: true,
+                    markerSize: 0,
+                    yValueFormatString: "#,###m3/s",
+                    dataPoints: [
+                        {% for item, label in predict %}
+                        {
+                            x: new Date{{item}},
+                            y: {{label[0]}}
+                        },
+                    {% endfor %}
+                    ]
+                },
+            {
+                    type: "line",
+                    axisYType: "secondary",
+                    color: "rgba(10,5,5,0.98)",
+                    name: "Dự báo",
+                    showInLegend: true,
+                    markerSize: 0,
+                    yValueFormatString: "#,###m3/s",
+                    dataPoints: [
+                        {% for item, label in dubao %}
+                        {
+                            x: new Date{{item}},
+                            y: {{label}}
+                        },
+                    {% endfor %}
+                    ]
+                }]
+        });
+        chart.render();
+        var charts = new CanvasJS.Chart("areaContainer", {
+            animationEnabled: true,
+            title: {
+                text: "Dòng chảy dự đoán"
+            },
+            axisX: {
+                title: "Thời gian",
+                {#valueFormatString: "DD MMM YYYY"#}
+            },
+            axisY: {
+                title: "Revenue in USD",
+                suffix: "m3/s",
+            },
+            legend: {
+                cursor: "pointer",
+                verticalAlign: "top",
+                horizontalAlign: "left",
+                dockInsidePlotArea: true,
+                itemclick: toogleDataSeries
+            },
+            data: [{
+                type: "splineArea",
+                color: "rgba(7,112,255,0.7)",
+                name: "Thực tế",
+                showInLegend: true,
+                markerSize: 10,
+                {#xValueFormatString: "DD MMM YYYY",#}
+                yValueFormatString: "#### m3/s",
+                dataPoints: [
+                    {% for label,aut in aut %}
+                        {
+                            y: {{aut}},
+                            label:"{{ label }}"
+                        },
+                    {% endfor %}
+                    {#{ y: 529, label:"Một ngày" },#}
+                    {#{ y: 540, label:"Hai ngày" },#}
+                    {#{ y: 539, label:"Ba ngày" },#}
+                ]
+            },
+            {
+                type: "line",
+                color: "rgba(173,18,43,0.7)",
+                markerSize: 10,
+                name: "Dự báo",
+                showInLegend: true,
+                {#xValueFormatString: "DD MMM YYYY",#}
+                yValueFormatString: "#### m3/s",
+                dataPoints: [
+                    {% for i,j in charts %}
+                        {
+                            y: {{j}},
+                            label:"{{ i }}"
+                        },
+                    {% endfor %}
+                ]
+            }]
+        });
+        charts.render();
+
+        function toogleDataSeries(e) {
+            if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+                e.dataSeries.visible = false;
+            } else {
+                e.dataSeries.visible = true;
+            }
+            chart.render();
+            charts.render();
+        }
+
+    }
+</script>
+</body>
+{#<script type=text/javascript src="{{#}
+{#  url_for('static', filename='js/chart.js') }}"></script>#}
+</html>
